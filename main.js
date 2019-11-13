@@ -1,15 +1,17 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu } = require("electron");
+const prompt = require("electron-prompt");
 const path = require("path");
 const url = require("url");
 require("electron-reload")(__dirname);
-
+var username = false;
 const knex = require("knex")({
   client: "sqlite3",
   connection: {
     filename: "./database.sqlite"
-  }
+  },
+  useNullAsDefault: true
 });
-let mainWindow;
+var mainWindow;
 
 app.on("ready", () => {
   mainWindow = new BrowserWindow({
@@ -30,12 +32,8 @@ app.on("ready", () => {
   mainWindow.once("ready-to-show", () => {
     mainWindow.show();
   });
-
-  ipcMain.on("mainWindowLoaded", function() {
-    let result = knex.select("username").from("users");
-    result.then(function(rows) {
-      mainWindow.webContents.send("result", rows);
-    });
+  ipcMain.on("loggedin", (event, arg) => {
+    username = arg;
   });
   ipcMain.on("login", (event, arg) => {
     let result = knex("users")
@@ -65,3 +63,159 @@ app.on("window-all-closed", function() {
 app.on("activate", function() {
   if (mainWindow === null) createWindow();
 });
+const isMac = process.platform === "darwin";
+
+const template = [
+  // { role: 'appMenu' }
+  ...(isMac
+    ? [
+        {
+          label: app.name,
+          submenu: [
+            { role: "about" },
+            { type: "separator" },
+            { role: "services" },
+            { type: "separator" },
+            { role: "hide" },
+            { role: "hideothers" },
+            { role: "unhide" },
+            { type: "separator" },
+            { role: "quit" }
+          ]
+        }
+      ]
+    : []),
+  // { role: 'fileMenu' }
+  {
+    label: "File",
+    submenu: [isMac ? { role: "close" } : { role: "quit" }]
+  },
+  // { role: 'editMenu' }
+  {
+    label: "Edit",
+    submenu: [
+      { role: "undo" },
+      { role: "redo" },
+      { type: "separator" },
+      { role: "cut" },
+      { role: "copy" },
+      { role: "paste" },
+      ...(isMac
+        ? [
+            { role: "pasteAndMatchStyle" },
+            { role: "delete" },
+            { role: "selectAll" },
+            { type: "separator" },
+            {
+              label: "Speech",
+              submenu: [{ role: "startspeaking" }, { role: "stopspeaking" }]
+            }
+          ]
+        : [{ role: "delete" }, { type: "separator" }, { role: "selectAll" }])
+    ]
+  },
+  // { role: 'viewMenu' }
+  {
+    label: "View",
+    submenu: [
+      { role: "reload" },
+      { role: "forcereload" },
+      { role: "toggledevtools" },
+      { type: "separator" },
+      { role: "resetzoom" },
+      { role: "zoomin" },
+      { role: "zoomout" },
+      { type: "separator" },
+      { role: "togglefullscreen" }
+    ]
+  },
+  // { role: 'windowMenu' }
+  {
+    label: "Window",
+    submenu: [
+      { role: "minimize" },
+      { role: "zoom" },
+      ...(isMac
+        ? [
+            { type: "separator" },
+            { role: "front" },
+            { type: "separator" },
+            { role: "window" }
+          ]
+        : [{ role: "close" }])
+    ]
+  },
+  {
+    role: "help",
+    submenu: [
+      {
+        label: "Learn More",
+        click: async () => {
+          const { shell } = require("electron");
+          await shell.openExternal("https://electronjs.org");
+        }
+      }
+    ]
+  },
+  {
+    label: "Settings",
+    submenu: [
+      {
+        label: "Нууц үг солих",
+        click: async () => {
+          mainWindow.webContents
+            .executeJavaScript('localStorage.getItem("auth");', true)
+            .then(result => {
+              username = result;
+            });
+          username
+            ? prompt({
+                title: "Нууц үг солих",
+                label: "Солих нууц үгээ оруулна уу:",
+                value: "",
+                inputAttrs: {
+                  type: "password"
+                },
+                type: "input"
+              })
+                .then(password => {
+                  if (password === null) {
+                    console.log("user cancelled");
+                  } else {
+                    knex("users")
+                      .update({
+                        password
+                      })
+                      .where({ username, username })
+                      .then(e => {
+                        console.log(e);
+                      })
+                      .catch(function(err) {
+                        console.log(err.stack);
+                      });
+                  }
+                })
+                .catch(console.error)
+            : console.log("not logged in");
+        }
+      },
+      {
+        label: "Системээс гарах",
+        click: async () => {
+          username = false;
+          mainWindow.webContents
+            .executeJavaScript('localStorage.removeItem("auth");', true)
+            .then(() => {
+              mainWindow.webContents.executeJavaScript(
+                'window.location.replace("./login.html");',
+                true
+              );
+            });
+        }
+      }
+    ]
+  }
+];
+
+const menu = Menu.buildFromTemplate(template);
+Menu.setApplicationMenu(menu);
