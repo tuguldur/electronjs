@@ -31,6 +31,12 @@
     <link href="./assets/css/bootstrap.min.css" rel="stylesheet" />
     <link href="./assets/css/now-ui-kit.min.css" rel="stylesheet" />
     <link href="./assets/demo/demo.css" rel="stylesheet" />
+    <script>
+      const $ = require("jquery");
+      const electron = require("electron");
+      const ipc = electron.ipcRenderer;
+      ipc.send("get_user");
+    </script>
   </head>
 
   <body>
@@ -47,7 +53,7 @@
         <div class="row">
           <div class="col-md-6">
             <div class="card p-3">
-              <table class="table">
+              <table class="table" id="users_table">
                 <thead>
                   <tr>
                     <th scope="col">#</th>
@@ -55,23 +61,7 @@
                     <th scope="col">Нэр</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">1</th>
-                    <td>Mark</td>
-                    <td>Otto</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">2</th>
-                    <td>Jacob</td>
-                    <td>Thornton</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">3</th>
-                    <td>Larry</td>
-                    <td>the Bird</td>
-                  </tr>
-                </tbody>
+                <tbody id="users"></tbody>
               </table>
             </div>
           </div>
@@ -91,7 +81,8 @@
                   <input
                     type="text"
                     class="form-control"
-                    placeholder="Хайлтын хэсэг"
+                    placeholder="Нэрээр хайх"
+                    id="search_user"
                   />
                 </div>
               </div>
@@ -101,5 +92,34 @@
         <div class="space-70"></div>
       </div>
     </div>
+    <script>
+      ipc.on("users", function(evt, result) {
+        result.forEach(user => {
+          $("#users").append(
+            `<tr><td>${user.id}</td><td>${user.lastname}</td><td>${user.firstname}</td></tr>`
+          );
+        });
+      });
+      $("#search_user").on("keyup", function() {
+        // Declare variables
+        var input, table, tr, td, i, txtValue;
+        input = $("#search_user")
+          .val()
+          .toUpperCase();
+        table = document.getElementById("users_table");
+        tr = table.getElementsByTagName("tr");
+        for (i = 0; i < tr.length; i++) {
+          td = tr[i].getElementsByTagName("td")[2];
+          if (td) {
+            txtValue = td.textContent || td.innerText;
+            if (txtValue.toUpperCase().indexOf(input) > -1) {
+              tr[i].style.display = "";
+            } else {
+              tr[i].style.display = "none";
+            }
+          }
+        }
+      });
+    </script>
   </body>
 </html>

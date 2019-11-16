@@ -3,24 +3,6 @@ const prompt = require("electron-prompt");
 const path = require("path");
 const url = require("url");
 require("electron-reload")(__dirname);
-// CREATE UPLOAD FOLDER
-const fs = require("fs").promises;
-async function ensureDir(dirpath) {
-  try {
-    await fs.mkdir(dirpath, { recursive: true });
-  } catch (err) {
-    if (err.code !== "EEXIST") throw err;
-  }
-}
-async function main() {
-  try {
-    await ensureDir("uploads");
-    console.log("Directory created");
-  } catch (err) {
-    console.error(err);
-  }
-}
-main();
 var username = false;
 const knex = require("knex")({
   client: "sqlite3",
@@ -71,6 +53,12 @@ app.on("ready", () => {
     let result = knex("customers").insert(arg);
     result.then(function(rows) {
       console.log(rows);
+    });
+  });
+  ipcMain.on("get_user", (event, arg) => {
+    let result = knex.select().table("customers");
+    result.then(function(rows) {
+      mainWindow.webContents.send("users", rows);
     });
   });
   mainWindow.on("closed", () => {
