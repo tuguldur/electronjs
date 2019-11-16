@@ -9,6 +9,8 @@ git clone https://github.com/tuguldur/electronjs
 cd electronjs
 # Install dependencies
 npm install
+# Rebuild dependencies
+npm run rebuild
 # Run the app
 npm start
 ```
