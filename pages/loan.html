@@ -30,6 +30,12 @@
     <link href="./assets/css/bootstrap.min.css" rel="stylesheet" />
     <link href="./assets/css/now-ui-kit.min.css" rel="stylesheet" />
     <link href="./assets/demo/demo.css" rel="stylesheet" />
+    <script>
+      const $ = require("jquery");
+      const electron = require("electron");
+      const ipc = electron.ipcRenderer;
+      ipc.send("get_user");
+    </script>
   </head>
 
   <body>
@@ -47,7 +53,9 @@
         <div class="row">
           <div class="col-md-12">
             <div class="card p-3">
-              <table class="table">
+              <span id="notpaid" class="mr-5">Нийт төлөгдөөгүй:</span>
+              <span id="paid">Нийт төлөгдсөн:</span>
+              <table class="table table-hover cd">
                 <thead>
                   <tr>
                     <th scope="col">#</th>
@@ -58,35 +66,7 @@
                     <th scope="col">Зээлийн дүн</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">1</th>
-                    <td>2019.10.01</td>
-                    <td>А.Болд</td>
-                    <td>9-р баг. парт</td>
-                    <td>
-                      <span class="badge badge-warning">Төлөгдөөгүй</span>
-                    </td>
-                    <td>50'000 ₮</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">2</th>
-                    <td>2018.08.12</td>
-                    <td>Б.Гэрэл</td>
-                    <td>2-р баг. парт</td>
-                    <td><span class="badge badge-success">Төлөгдсөн</span></td>
-                    <td>60'000 ₮</td>
-                  </tr>
-
-                  <tr>
-                    <th colspan="5"></th>
-                    <td>Нийт төлөгдсөн: Дүн</td>
-                  </tr>
-                  <tr>
-                    <th colspan="5"></th>
-                    <td>Нийт төлөгдөөгүй: Дүн</td>
-                  </tr>
-                </tbody>
+                <tbody id="loan"></tbody>
               </table>
               <div class="mr-3">
                 <a
@@ -101,5 +81,42 @@
         <div class="space-70"></div>
       </div>
     </div>
+    <script>
+      ipc.on("users", function(evt, result) {
+        var paid = [],
+          notpaid = [];
+        result.forEach(user => {
+          if (user.status == 1) {
+            notpaid.push(user.amount);
+          } else if (user.status == 2) paid.push(user.amount);
+          $("#loan").append(
+            `<tr onclick="info(${user.id})" style="display: ${
+              user.status == 0 ? "none" : ""
+            }"><td>${user.id}</td><td>${user.date}</td><td>${
+              user.firstname
+            }</td><td>${user.address}</td><td>${
+              user.status == 1
+                ? '<span class="badge badge-warning">Төлөгдөөгүй</span>'
+                : '<span class="badge badge-success">Төлөгдсөн</span>'
+            }</td><td>${user.amount}</td></tr>`
+          );
+        });
+        $("#notpaid").html(
+          `Төлөгдөөгүй: <span class="badge badge-warning">${notpaid.reduce(
+            (a, b) => a + b,
+            0
+          )}</span>`
+        );
+        $("#paid").html(
+          `Төлөгдсөн: <span class="badge badge-success">${paid.reduce(
+            (a, b) => a + b,
+            0
+          )}</span>`
+        );
+      });
+      function info(id) {
+        ipc.send("info", id);
+      }
+    </script>
   </body>
 </html>
