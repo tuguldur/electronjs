@@ -53,7 +53,7 @@
         <div class="row">
           <div class="col-md-6">
             <div class="card p-3">
-              <table class="table" id="users_table">
+              <table class="table table-hover cd" id="users_table">
                 <thead>
                   <tr>
                     <th scope="col">#</th>
@@ -96,7 +96,7 @@
       ipc.on("users", function(evt, result) {
         result.forEach(user => {
           $("#users").append(
-            `<tr><td>${user.id}</td><td>${user.lastname}</td><td>${user.firstname}</td></tr>`
+            `<tr onclick="info(${user.id})"><td>${user.id}</td><td>${user.lastname}</td><td>${user.firstname}</td></tr>`
           );
         });
       });
@@ -120,6 +120,9 @@
           }
         }
       });
+      function info(id) {
+        ipc.send("info", id);
+      }
     </script>
   </body>
 </html>

@@ -2,8 +2,8 @@ const { app, BrowserWindow, ipcMain, Menu } = require("electron");
 const prompt = require("electron-prompt");
 const path = require("path");
 const url = require("url");
-require("electron-reload")(__dirname);
 var username = false;
+var customer = false;
 const knex = require("knex")({
   client: "sqlite3",
   connection: {
@@ -15,8 +15,10 @@ var mainWindow;
 
 app.on("ready", () => {
   mainWindow = new BrowserWindow({
-    width: 1000,
+    width: 1350,
     height: 600,
+    minHeight: 600,
+    minWidth: 1350,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: true
@@ -60,6 +62,52 @@ app.on("ready", () => {
     result.then(function(rows) {
       mainWindow.webContents.send("users", rows);
     });
+  });
+  ipcMain.on("info", (event, arg) => {
+    let result = knex("customers")
+      .where(function() {
+        this.where("id", "=", arg);
+      })
+      .limit(1);
+    result.then(function(rows) {
+      mainWindow.loadURL(
+        url.format({
+          pathname: path.join(__dirname, "pages/info.html"),
+          protocol: "file",
+          slashes: true
+        })
+      );
+      customer = rows;
+    });
+  });
+  ipcMain.on("update", (event, arg) => {
+    var { id, user } = arg;
+    var result = knex("customers")
+      .update({
+        firstname: user.firstname,
+        lastname: user.lastname,
+        amount: user.amount,
+        address: user.address,
+        phone: user.phone,
+        status: user.status,
+        date: user.date,
+        info: user.info
+      })
+      .where({ id });
+    result.then(function(rows) {
+      console.log(rows);
+    });
+  });
+  ipcMain.on("remove", (event, arg) => {
+    var result = knex("customers")
+      .where({ id: arg.id })
+      .del();
+    result.then(function(rows) {
+      console.log(rows);
+    });
+  });
+  ipcMain.on("get_customer", (event, arg) => {
+    mainWindow.webContents.send("info_customer", customer);
   });
   mainWindow.on("closed", () => {
     mainWindow = null;

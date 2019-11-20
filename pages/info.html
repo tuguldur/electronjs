@@ -24,6 +24,29 @@
     <link href="./assets/css/bootstrap.min.css" rel="stylesheet" />
     <link href="./assets/css/now-ui-kit.min.css" rel="stylesheet" />
     <link href="./assets/demo/demo.css" rel="stylesheet" />
+    <script>
+      const $ = require("jquery");
+      const electron = require("electron");
+      const ipc = electron.ipcRenderer;
+      var id;
+      ipc.send("get_customer");
+      ipc.on("info_customer", function(evt, result) {
+        if (result) {
+          var user = result[0];
+          id = user.id;
+          $("#lastname").val(user.lastname);
+          $("#firstname").val(user.firstname);
+          $("#amount").val(user.amount || 0);
+          $("#address").val(user.address);
+          $("#phone").val(user.phone);
+          user.status == null
+            ? $("#status").val("0")
+            : $("#status").val(user.status);
+          $("#date").val(user.date);
+          $("#info").val(user.info);
+        } else window.location.replace("./users.html");
+      });
+    </script>
   </head>
 
   <body>
@@ -45,6 +68,12 @@
         <div class="row">
           <div class="col-md-12">
             <div class="card p-3">
+              <p class="text-center color-red" id="error"></p>
+              <div class="row">
+                <span style="font-size: 16px;" class="p-3"
+                  >хэрэглэгчийн мэдээлэл</span
+                >
+              </div>
               <div class="row">
                 <div class="col-md-4">
                   <div class="form-group inline-label">
@@ -52,7 +81,6 @@
                     <input
                       type="text"
                       class="form-control form-control-success"
-                      value="Болд"
                       id="lastname"
                     />
                   </div>
@@ -63,7 +91,6 @@
                     <input
                       type="text"
                       class="form-control form-control-success"
-                      value="Амар"
                       id="firstname"
                     />
                   </div>
@@ -74,7 +101,6 @@
                     <input
                       type="number"
                       class="form-control form-control-success"
-                      value="50000"
                       id="amount"
                     />
                   </div>
@@ -87,23 +113,30 @@
                     <input
                       type="text"
                       class="form-control form-control-success"
-                      value="Булган сум"
                       id="address"
                     />
                   </div>
                 </div>
                 <div class="col-md-4">
                   <div class="form-group inline-label">
-                    <label for="status">төлөв</label>
+                    <label for="phone">Утас</label>
                     <input
-                      type="text"
+                      type="number"
                       class="form-control form-control-success"
-                      value="төлөгдөөгүй"
-                      id="status"
+                      id="phone"
                     />
                   </div>
                 </div>
-                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                  <div class="form-group inline-label">
+                    <label for="status">төлөв</label>
+                    <select name="status" id="status">
+                      <option value="0">Идэвхгүй</option>
+                      <option value="1">Төлөгдөөгүй</option>
+                      <option value="2">Төлөгдсөн</option>
+                    </select>
+                  </div>
+                </div>
               </div>
               <div class="row">
                 <span style="font-size: 16px;" class="p-3"
@@ -113,23 +146,20 @@
               <div class="row">
                 <div class="col-md-6">
                   <div class="form-group inline-label">
-                    <label for="status" style="width: 151px;"
-                      >он/сар/өдөр</label
-                    >
+                    <label for="date" style="width: 151px;">он/сар/өдөр</label>
                     <input
                       type="text"
                       class="form-control form-control-success"
-                      value="2019.9.10"
-                      id="status"
+                      id="date"
                     />
                   </div>
                 </div>
                 <div class="col-md-6">
                   <div class="float-right">
-                    <a href="#" class="btn btn-primary btn-round btn-sm"
-                      >Засах</a
-                    >
-                    <a href="#" class="btn btn-outline-primary btn-round btn-sm"
+                    <a
+                      href="#"
+                      class="btn btn-outline-primary btn-round btn-sm"
+                      id="remove"
                       >Устгах</a
                     >
                   </div>
@@ -141,7 +171,7 @@
                     <textarea
                       class="form-control"
                       id="info"
-                      style="min-height: 500px;"
+                      style="min-height: 300px;"
                     ></textarea>
                   </div>
                 </div>
@@ -149,11 +179,14 @@
               <div class="row">
                 <div class="col-md-12">
                   <div class="float-right">
-                    <a href="#" class="btn btn-primary btn-round btn-sm"
+                    <a
+                      href="#"
+                      class="btn btn-primary btn-round btn-sm"
+                      id="save"
                       >Хадгалах</a
                     >
                     <a
-                      href="./menu.html"
+                      href="./users.html"
                       class="btn btn-outline-primary btn-round btn-sm"
                       >Буцах</a
                     >
@@ -166,5 +199,37 @@
         <div class="space-70"></div>
       </div>
     </div>
+    <script>
+      $("#save").click(function() {
+        var lastname = $("#lastname").val();
+        var firstname = $("#firstname").val();
+        var amount = $("#amount").val();
+        var status = $("#status").val();
+        var address = $("#address").val();
+        var phone = $("#phone").val();
+        var date = $("#date").val();
+        var info = $("#info").val();
+        var data = [
+          { lastname, firstname, amount, status, address, phone, date, info }
+        ];
+        if (
+          lastname &&
+          firstname &&
+          amount &&
+          address &&
+          phone &&
+          date &&
+          info
+        ) {
+          ipc.send("update", { user: data[0], id });
+          window.location.replace("./users.html");
+        } else $("#error").html("Мэдээлэл ээ бүрэн оруулна уу");
+      });
+      $("#remove").click(function() {
+        console.log(id);
+        ipc.send("remove", {id});
+        window.location.replace("./users.html");
+      });
+    </script>
   </body>
 </html>

@@ -553,3 +553,11 @@
 .breadcrumb-item.active > a {
   color: #6c757d !important;
 }
+/* colors */
+.color-red {
+  color: red;
+}
+/* table */
+.cd tbody tr:hover {
+  cursor: pointer;
+}
