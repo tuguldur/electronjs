@@ -82,6 +82,13 @@
       </div>
     </div>
     <script>
+      Number.prototype.format = function(n, x) {
+        var re = "\\d(?=(\\d{" + (x || 3) + "})+" + (n > 0 ? "\\." : "$") + ")";
+        return this.toFixed(Math.max(0, ~~n)).replace(
+          new RegExp(re, "g"),
+          "$&,"
+        );
+      };
       ipc.on("users", function(evt, result) {
         var paid = [],
           notpaid = [];
@@ -96,22 +103,20 @@
               user.firstname
             }</td><td>${user.address}</td><td>${
               user.status == 1
-                ? '<span class="badge badge-warning">Төлөгдөөгүй</span>'
+                ? '<span class="badge badge-danger">Төлөгдөөгүй</span>'
                 : '<span class="badge badge-success">Төлөгдсөн</span>'
-            }</td><td>${user.amount}</td></tr>`
+            }</td><td>${user.amount.format()}₮</td></tr>`
           );
         });
         $("#notpaid").html(
-          `Төлөгдөөгүй: <span class="badge badge-warning">${notpaid.reduce(
-            (a, b) => a + b,
-            0
-          )}</span>`
+          `Төлөгдөөгүй: <span class="badge badge-danger" style="font-size:13px;">${notpaid
+            .reduce((a, b) => a + b, 0)
+            .format() + "₮"}</span>`
         );
         $("#paid").html(
-          `Төлөгдсөн: <span class="badge badge-success">${paid.reduce(
-            (a, b) => a + b,
-            0
-          )}</span>`
+          `Төлөгдсөн: <span class="badge badge-success" style="font-size:13px;">${paid
+            .reduce((a, b) => a + b, 0)
+            .format() + "₮"}</span>`
         );
       });
       function info(id) {

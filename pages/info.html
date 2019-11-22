@@ -34,6 +34,7 @@
         if (result) {
           var user = result[0];
           id = user.id;
+          $("#name").html(user.lastname + " " + user.firstname);
           $("#lastname").val(user.lastname);
           $("#firstname").val(user.firstname);
           $("#amount").val(user.amount || 0);
@@ -64,7 +65,7 @@
           </ol>
         </nav>
         <h3 class="title">Тухайн хүний зээлийн хуудас</h3>
-        <div class="space-70"></div>
+        <h3 class="title p-0 mb-3" id="name"></h3>
         <div class="row">
           <div class="col-md-12">
             <div class="card p-3">
@@ -227,7 +228,7 @@
       });
       $("#remove").click(function() {
         console.log(id);
-        ipc.send("remove", {id});
+        ipc.send("remove", { id });
         window.location.replace("./users.html");
       });
     </script>

@@ -58,7 +58,7 @@ app.on("ready", () => {
     });
   });
   ipcMain.on("get_user", (event, arg) => {
-    let result = knex.select().table("customers");
+    let result = knex("customers").orderBy("firstname", "asc");
     result.then(function(rows) {
       mainWindow.webContents.send("users", rows);
     });
@@ -116,8 +116,6 @@ app.on("ready", () => {
 
 // Quit when all windows are closed.
 app.on("window-all-closed", function() {
-  // On macOS it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== "darwin") app.quit();
 });
 

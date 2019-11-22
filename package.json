@@ -1,7 +1,7 @@
 {
-  "name": "electron",
+  "name": "zeel",
   "version": "1.0.0",
-  "description": "A minimal Electron application",
+  "description": "zeeliin software",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -9,7 +9,7 @@
     "build": "electron-builder"
   },
   "repository": "https://github.com/tuguldur/electronjs",
-  "author": "GitHub",
+  "author": "Zerothink LLC",
   "license": "CC0-1.0",
   "devDependencies": {
     "electron": "^7.1.1",
