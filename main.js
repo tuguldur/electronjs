@@ -21,6 +21,7 @@ app.on("ready", () => {
     minHeight: 600,
     minWidth: 1350,
     backgroundColor: "#202124",
+    devTools: false,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: true
@@ -248,7 +249,6 @@ const template = [
     submenu: [
       { role: "reload" },
       { role: "forcereload" },
-      { role: "toggledevtools" },
       { type: "separator" },
       { role: "resetzoom" },
       { role: "zoomin" },
