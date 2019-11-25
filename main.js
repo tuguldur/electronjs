@@ -100,8 +100,8 @@ app.on("ready", () => {
   });
   ipcMain.on("remove", (event, arg) => {
     var result = knex("customers")
-      .where({ id: arg.id })
-      .del();
+      .update({ info: "" })
+      .where({ id: arg.id });
     result.then(function(rows) {
       console.log(rows);
     });

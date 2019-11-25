@@ -13,4 +13,6 @@ npm install
 npm run rebuild
 # Run the app
 npm start
+# build dependencies
+npm run build
 ```

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="utf-8" />
     <link
@@ -75,7 +75,7 @@
                   >хэрэглэгчийн мэдээлэл</span
                 >
               </div>
-              <div class="row">
+              <div class="row" style="font-size:15px;">
                 <div class="col-md-4">
                   <div class="form-group inline-label">
                     <label for="lastname">овог</label>
@@ -86,7 +86,7 @@
                     />
                   </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                   <div class="form-group inline-label">
                     <label for="firstname">нэр</label>
                     <input
@@ -96,18 +96,21 @@
                     />
                   </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-5">
                   <div class="form-group inline-label">
-                    <label for="amount" style="width:153px">зээлийн дүн</label>
+                    <label for="amount" style="font-size:16px;width:auto"
+                      >зээлийн дүн</label
+                    >
                     <input
                       type="number"
                       class="form-control form-control-success"
                       id="amount"
+                      style="width: auto; font-size: 17px;"
                     />
                   </div>
                 </div>
               </div>
-              <div class="row border-bottom">
+              <div class="row border-bottom" style="font-size:15px;">
                 <div class="col-md-4">
                   <div class="form-group inline-label">
                     <label for="address">хаяг</label>
@@ -160,8 +163,8 @@
                     <a
                       href="#"
                       class="btn btn-outline-primary btn-round btn-sm"
-                      id="remove"
-                      >Устгах</a
+                      id="clear"
+                      >Цэвэрлэх</a
                     >
                   </div>
                 </div>
@@ -226,9 +229,9 @@
           window.location.replace("./users.html");
         } else $("#error").html("Мэдээлэл ээ бүрэн оруулна уу");
       });
-      $("#remove").click(function() {
+      $("#clear").click(function() {
         console.log(id);
-        ipc.send("remove", { id });
+        ipc.send("clear", { id });
         window.location.replace("./users.html");
       });
     </script>

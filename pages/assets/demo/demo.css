@@ -561,3 +561,61 @@
 .cd tbody tr:hover {
   cursor: pointer;
 }
+/* dark theme */
+.dark body,
+.dark .section {
+  background: #202124;
+  color: #fff;
+}
+.dark .breadcrumb,
+.dark .card {
+  background: #45474c;
+}
+.dark .breadcrumb-item.active > a {
+  color: #d6dfe6 !important;
+}
+.dark .table thead th,
+.dark .table td,
+.dark label,
+.dark .form-control:focus,
+.dark .card-body,
+.dark input,
+.dark textarea {
+  color: #fff;
+}
+.dark .form-control:focus {
+  background-color: #373738;
+  border: 1px solid #2ca8ff;
+}
+.dark .custom-file-label {
+  background-color: #737579;
+}
+.dark .btn-sm {
+  color: #d2cccc;
+}
+.dark .btn-secondary {
+  background: #464444;
+}
+.dark .btn-primary {
+  background-color: #2ca8ff;
+  color: #fff !important;
+}
+.dark .btn-outline-primary:focus,
+.dark .btn-outline-primary:hover {
+  border-color: #2ca8ff;
+}
+a,
+a:focus,
+a:hover {
+  color: #2ca8ff;
+}
+.dark .border-bottom {
+  border-bottom: 1px solid #696969 !important;
+}
+.dark .table,
+.dark table td {
+  border-color: #696969;
+}
+.dark .table thead th {
+  border-bottom: 2px solid #696969;
+}
