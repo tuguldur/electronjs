@@ -35,6 +35,14 @@
       const $ = require("jquery");
       const electron = require("electron");
       const ipc = electron.ipcRenderer;
+      var date = new Date()
+        .toLocaleString("ko-KR", {
+          timeZone: "Asia/Ulaanbaatar"
+        })
+        .slice(0, 12)
+        .replace(/[ ]/g, "");
+
+      ipc.send("get_loan");
     </script>
   </head>
   <body>
@@ -55,10 +63,20 @@
           <div class="col-md-6">
             <div class="card">
               <div class="card-header text-center">
-                <span class="badge badge-info mt-3">Reminder</span>
+                <span class="badge badge-info mt-3">Хугацаа хэтэрсэн зээл</span>
               </div>
-              <div class="card-body">
-                Хугацаа хэтэрсэн зээл сануулах
+              <div class="card-body" id="ifnoloans">
+                <table class="table table-hover cd">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Он/сар/өдөр</th>
+                      <th scope="col">Төлөв</th>
+                      <th scope="col">Зээлийн дүн</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reminders"></tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -88,6 +106,37 @@
       ipc.on("error", function(event, arg) {
         $("#error").html(arg);
       });
+      ipc.on("loans", function(evt, result) {
+        Number.prototype.format = function(n, x) {
+          var re =
+            "\\d(?=(\\d{" + (x || 3) + "})+" + (n > 0 ? "\\." : "$") + ")";
+          return this.toFixed(Math.max(0, ~~n)).replace(
+            new RegExp(re, "g"),
+            "$&,"
+          );
+        };
+        result.forEach(e => {
+          console.log(e.end);
+          if (date > e.end && e.status == 1) {
+            $("#reminders").append(
+              `<tr onclick="info(${e.id})"><td>${e.id}</td><td>${
+                e.end
+              }</td><td>${
+                e.status == 1
+                  ? '<span class="badge badge-danger">Төлөгдөөгүй</span>'
+                  : '<span class="badge badge-success">Төлөгдсөн</span>'
+              }</td><td>${e.amount.format()}₮</td></tr>`
+            );
+          } else {
+            $("#ifnoloans").html(
+              "<p class='p-3 text-center'>Хугацаа хэтэрсэн зээл байхгүй байна.</p>"
+            );
+          }
+        });
+      });
+      function info(id) {
+        ipc.send("info", id);
+      }
     </script>
   </body>
 </html>
