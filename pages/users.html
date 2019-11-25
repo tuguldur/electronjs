@@ -93,13 +93,101 @@
         <div class="space-70"></div>
       </div>
     </div>
+    <div
+      class="modal"
+      id="user-info"
+      tabindex="-1"
+      role="dialog"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="user-info-title">
+              Тухайн хүний мэдээлэл
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col">
+                <div class="form-group">
+                  <label for="lastname">Овог</label>
+                  <input
+                    type="text"
+                    class="form-control form-control-success"
+                    id="lastname"
+                  />
+                </div>
+              </div>
+              <div class="col">
+                <div class="form-group">
+                  <label for="firstname">Нэр</label>
+                  <input
+                    type="text"
+                    class="form-control form-control-success"
+                    id="firstname"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="w-100">
+              <div class="form-group">
+                <label for="address">Хаяг</label>
+                <input
+                  type="text"
+                  class="form-control form-control-success"
+                  id="address"
+                />
+              </div>
+            </div>
+            <div class="w-50">
+              <div class="form-group">
+                <label for="phone">Утас</label>
+                <input
+                  type="number"
+                  class="form-control form-control-success"
+                  id="phone"
+                />
+              </div>
+            </div>
+            <div class="row">
+              <div id="passport"></div>
+            </div>
+            <p class="text-center" id="error"></p>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="remove">
+              Устгах
+            </button>
+            <button type="button" class="btn btn-primary" id="save">
+              Хадгалах
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
+      const { modal } = require("bootstrap");
+      var users;
+      var user_id;
       ipc.on("users", function(evt, result) {
         result.forEach(user => {
           $("#users").append(
-            `<tr onclick="info(${user.id})"><td>${user.id}</td><td>${user.lastname}</td><td>${user.firstname}</td></tr>`
+            `<tr onclick="info(${user.id})" data-toggle="modal" data-target="#user-info"><td>${user.id}</td><td>${user.lastname}</td><td>${user.firstname}</td></tr>`
           );
         });
+        users = result;
       });
       $("#search_user").on("keyup", function() {
         // Declare variables
@@ -122,8 +210,35 @@
         }
       });
       function info(id) {
-        ipc.send("info", id);
+        var user = users.find(e => e.id == id);
+        console.log(user);
+        $("#lastname").val(user.lastname);
+        $("#firstname").val(user.firstname);
+        $("#address").val(user.address);
+        $("#phone").val(user.phone);
+        var image = new Image();
+        image.src = user.passport;
+        document.getElementById("passport").appendChild(image);
+        user_id = id;
       }
+      $("#save").click(function() {
+        var lastname = $("#lastname").val();
+        var firstname = $("#firstname").val();
+        var address = $("#address").val();
+        var phone = $("#phone").val();
+        var data = { lastname, firstname, address, phone };
+        if (lastname && firstname && address && phone) {
+          ipc.send("update", { user: data, id: user_id });
+          window.location.replace("./users.html");
+        } else $("#error").html("Мэдээлэл ээ бүрэн оруулна уу");
+      });
+      $("#user-info").on("hidden.bs.modal", function() {
+        $("#passport").html("");
+      });
+      $("#remove").click(function() {
+        ipc.send("remove", { id: user_id });
+        window.location.replace("./users.html");
+      });
     </script>
   </body>
 </html>

@@ -568,7 +568,8 @@
   color: #fff;
 }
 .dark .breadcrumb,
-.dark .card {
+.dark .card,
+.dark .modal-content {
   background: #45474c;
 }
 .dark .breadcrumb-item.active > a {

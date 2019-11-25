@@ -82,16 +82,13 @@ app.on("ready", () => {
   });
   ipcMain.on("update", (event, arg) => {
     var { id, user } = arg;
+    console.log(id);
     var result = knex("customers")
       .update({
         firstname: user.firstname,
         lastname: user.lastname,
-        amount: user.amount,
         address: user.address,
-        phone: user.phone,
-        status: user.status,
-        date: user.date,
-        info: user.info
+        phone: user.phone
       })
       .where({ id });
     result.then(function(rows) {
@@ -100,8 +97,8 @@ app.on("ready", () => {
   });
   ipcMain.on("remove", (event, arg) => {
     var result = knex("customers")
-      .update({ info: "" })
-      .where({ id: arg.id });
+      .where({ id: arg.id })
+      .del();
     result.then(function(rows) {
       console.log(rows);
     });
