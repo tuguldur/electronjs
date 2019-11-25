@@ -31,6 +31,11 @@
     <link href="./assets/css/bootstrap.min.css" rel="stylesheet" />
     <link href="./assets/css/now-ui-kit.min.css" rel="stylesheet" />
     <link href="./assets/demo/demo.css" rel="stylesheet" />
+    <script>
+      const $ = require("jquery");
+      const electron = require("electron");
+      const ipc = electron.ipcRenderer;
+    </script>
   </head>
   <body>
     <div class="section section-basic mt-5">
@@ -58,18 +63,31 @@
             </div>
           </div>
           <div class="col-md-8 ml-auto mr-auto">
-            <div class="space-70"></div>
             <div class="form-group col-md-12">
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Хайлтын хэсэг"
-                style="padding: 23px 56px;font-size: 18px"
-              />
+              <p class="text-center mb-3" id="error"></p>
+              <form id="search">
+                <input
+                  type="number"
+                  class="form-control"
+                  placeholder="Хайлтын хэсэг"
+                  id="search_input"
+                  style="padding: 23px 56px;font-size: 18px"
+                />
+              </form>
             </div>
           </div>
         </div>
       </div>
     </div>
+    <script>
+      $("#search").submit(function(e) {
+        e.preventDefault();
+        var search = $("#search_input").val();
+        if (search.trim().length !== 0) ipc.send("search_users", search);
+      });
+      ipc.on("error", function(event, arg) {
+        $("#error").html(arg);
+      });
+    </script>
   </body>
 </html>

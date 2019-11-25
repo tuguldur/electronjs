@@ -35,7 +35,7 @@
       const $ = require("jquery");
       const electron = require("electron");
       const ipc = electron.ipcRenderer;
-      ipc.send("get_user");
+      ipc.send("get_search_users");
     </script>
   </head>
 
@@ -45,13 +45,16 @@
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="./menu.html">Нүүр</a></li>
-            <li class="breadcrumb-item active"><a href="#">Хэрэглэгч</a></li>
+            <li class="breadcrumb-item">
+              <a href="./users.html">Хэрэглэгч</a>
+            </li>
+            <li class="breadcrumb-item active"><a href="#">Хайлт</a></li>
           </ol>
         </nav>
         <h3 class="title mb-1">Хүмүүсийн жагсаалт</h3>
         <a href="./menu.html" class="btn btn-secondary mt-3 mb-4">Буцах</a>
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-12">
             <div class="card p-3">
               <table class="table table-hover cd" id="users_table">
                 <thead>
@@ -63,30 +66,6 @@
                 </thead>
                 <tbody id="users"></tbody>
               </table>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="card">
-              <div class="card-body">
-                <div class="text-center">
-                  <a href="adduser.html">
-                    <div class="btn-icon-container">
-                      <i class="now-ui-icons ui-1_simple-add"></i>
-                    </div>
-                    Шинэ хэрэглэгч нэмэх</a
-                  >
-                </div>
-                <div class="space-70"></div>
-                <div class="form-group col-md-11 mr-auto ml-auto">
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Нэрээр нь хайх...."
-                    id="search_user"
-                    style="padding: 23px 56px;font-size: 18px"
-                  />
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -212,7 +191,6 @@
         </div>
       </div>
     </div>
-
     <script>
       const { modal } = require("bootstrap");
       var users;
@@ -224,7 +202,7 @@
           "$&,"
         );
       };
-      ipc.on("users", function(evt, result) {
+      ipc.on("search_result", function(evt, result) {
         console.log(result);
         result.forEach(user => {
           $("#users").append(
@@ -263,26 +241,6 @@
             .reduce((a, b) => a + b, 0)
             .format() + "₮"}</span>`
         );
-      });
-      $("#search_user").on("keyup", function() {
-        // Declare variables
-        var input, table, tr, td, i, txtValue;
-        input = $("#search_user")
-          .val()
-          .toUpperCase();
-        table = document.getElementById("users_table");
-        tr = table.getElementsByTagName("tr");
-        for (i = 0; i < tr.length; i++) {
-          td = tr[i].getElementsByTagName("td")[2];
-          if (td) {
-            txtValue = td.textContent || td.innerText;
-            if (txtValue.toUpperCase().indexOf(input) > -1) {
-              tr[i].style.display = "";
-            } else {
-              tr[i].style.display = "none";
-            }
-          }
-        }
       });
       function info(id) {
         var user = users.find(e => e.id == id);

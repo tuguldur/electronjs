@@ -4,6 +4,7 @@ const path = require("path");
 const url = require("url");
 var username = false;
 var customer = false;
+var search_users;
 const knex = require("knex")({
   client: "sqlite3",
   connection: {
@@ -61,6 +62,15 @@ app.on("ready", () => {
   ipcMain.on("add_loan", (event, arg) => {
     let result = knex("loans").insert(arg.loan);
     result.then(function(rows) {
+      console.log(rows);
+    });
+  });
+  ipcMain.on("get_user_loan", (event, arg) => {
+    let result = knex("loans")
+      .select("*")
+      .where("user_id", "=", arg);
+    result.then(function(rows) {
+      mainWindow.webContents.send("users_loans", rows);
       console.log(rows);
     });
   });
@@ -146,6 +156,27 @@ app.on("ready", () => {
   });
   ipcMain.on("get_customer", (event, arg) => {
     mainWindow.webContents.send("info_customer", customer);
+  });
+  ipcMain.on("search_users", (event, arg) => {
+    var result = knex("customers").where({ phone: arg });
+    result.then(function(rows) {
+      if (rows.length !== 0) {
+        mainWindow.loadURL(
+          url.format({
+            pathname: path.join(__dirname, "pages/search.html"),
+            protocol: "file",
+            slashes: true
+          })
+        );
+        search_users = rows;
+      } else {
+        mainWindow.webContents.send("error", "Хэрэглэгч олдсонгүй");
+      }
+    });
+  });
+  ipcMain.on("get_search_users", (event, arg) => {
+    console.log(search_users);
+    mainWindow.webContents.send("search_result", search_users);
   });
   mainWindow.on("closed", () => {
     mainWindow = null;
@@ -246,10 +277,10 @@ const template = [
     role: "help",
     submenu: [
       {
-        label: "Learn More",
+        label: "Messenger-ээр холбогдох",
         click: async () => {
           const { shell } = require("electron");
-          await shell.openExternal("https://electronjs.org");
+          await shell.openExternal("https://m.me/tuguldur");
         }
       }
     ]

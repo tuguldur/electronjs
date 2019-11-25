@@ -624,6 +624,9 @@ a:hover {
   background: transparent;
   color: #fff;
 }
+.dark .page-header > .content {
+  margin-top: 9%;
+}
 /* hide number arrows */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
