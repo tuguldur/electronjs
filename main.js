@@ -19,6 +19,7 @@ app.on("ready", () => {
     height: 600,
     minHeight: 600,
     minWidth: 1350,
+    backgroundColor: "#202124",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       nodeIntegration: true
@@ -57,6 +58,20 @@ app.on("ready", () => {
       console.log(rows);
     });
   });
+  ipcMain.on("add_loan", (event, arg) => {
+    let result = knex("loans").insert(arg.loan);
+    result.then(function(rows) {
+      console.log(rows);
+    });
+  });
+  ipcMain.on("get_loan", (event, arg) => {
+    let result = knex("customers")
+      .orderBy("id", "asc")
+      .leftJoin("loans", "customers.id", "=", "loans.user_id");
+    result.then(function(rows) {
+      mainWindow.webContents.send("loans", rows);
+    });
+  });
   ipcMain.on("get_user", (event, arg) => {
     let result = knex("customers").orderBy("firstname", "asc");
     result.then(function(rows) {
@@ -64,11 +79,12 @@ app.on("ready", () => {
     });
   });
   ipcMain.on("info", (event, arg) => {
-    let result = knex("customers")
-      .where(function() {
-        this.where("id", "=", arg);
-      })
-      .limit(1);
+    let result = knex("customers").leftJoin(
+      "loans",
+      "customers.id",
+      "=",
+      "loans.user_id"
+    );
     result.then(function(rows) {
       mainWindow.loadURL(
         url.format({
@@ -77,7 +93,9 @@ app.on("ready", () => {
           slashes: true
         })
       );
-      customer = rows;
+      var user = rows.find(e => e.id == arg);
+      console.log(rows);
+      customer = user;
     });
   });
   ipcMain.on("update", (event, arg) => {
@@ -95,8 +113,31 @@ app.on("ready", () => {
       console.log(rows);
     });
   });
+  ipcMain.on("update_loan", (event, arg) => {
+    var { id, loan } = arg;
+    console.log(id);
+    var result = knex("loans")
+      .update({
+        amount: loan.amount,
+        start: loan.start,
+        end: loan.end,
+        status: loan.status
+      })
+      .where({ id });
+    result.then(function(rows) {
+      console.log(rows);
+    });
+  });
   ipcMain.on("remove", (event, arg) => {
     var result = knex("customers")
+      .where({ id: arg.id })
+      .del();
+    result.then(function(rows) {
+      console.log(rows);
+    });
+  });
+  ipcMain.on("remove_loan", (event, arg) => {
+    var result = knex("loans")
       .where({ id: arg.id })
       .del();
     result.then(function(rows) {

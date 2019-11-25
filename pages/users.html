@@ -182,6 +182,7 @@
       var users;
       var user_id;
       ipc.on("users", function(evt, result) {
+        console.log(result);
         result.forEach(user => {
           $("#users").append(
             `<tr onclick="info(${user.id})" data-toggle="modal" data-target="#user-info"><td>${user.id}</td><td>${user.lastname}</td><td>${user.firstname}</td></tr>`

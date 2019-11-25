@@ -35,6 +35,7 @@
       const electron = require("electron");
       const ipc = electron.ipcRenderer;
       ipc.send("get_user");
+      ipc.send("get_loan");
     </script>
   </head>
 
@@ -49,7 +50,17 @@
             </li>
           </ol>
         </nav>
-        <h3 class="title">Зээлийн жагсаалт</h3>
+        <div style="display: inline-flex; line-height: 40px;">
+          <h3 class="title" style="margin: 0; padding: 0;">Зээлийн жагсаалт</h3>
+          <a
+            href="#"
+            style="margin-left: 20px;"
+            data-toggle="modal"
+            data-target="#add-loan"
+            >Шинэ зээл нэмэх</a
+          >
+        </div>
+
         <div class="row">
           <div class="col-md-12">
             <div class="card p-3">
@@ -81,7 +92,99 @@
         <div class="space-70"></div>
       </div>
     </div>
+    <div
+      class="modal"
+      id="add-loan"
+      tabindex="-1"
+      role="dialog"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              Шинэ зээлийн мэдээлэл нэмэх
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label for="amount">Зээлийн хэмжээ</label>
+                  <input
+                    type="number"
+                    class="form-control form-control-success"
+                    id="amount"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <div class="form-group">
+                  <label for="start">Зээл авах огноо</label>
+                  <input
+                    type="text"
+                    class="form-control form-control-success"
+                    id="start"
+                  />
+                </div>
+              </div>
+
+              <div class="col">
+                <div class="form-group">
+                  <label for="end">Зээл төлөх огноо</label>
+                  <input
+                    type="text"
+                    class="form-control form-control-success"
+                    id="end"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-12">
+                <label for="user">Хэрэглэгч сонгох</label>
+                <input
+                  type="text"
+                  class="form-control form-control-success"
+                  id="user"
+                  list="users"
+                />
+                <datalist id="users"></datalist>
+              </div>
+            </div>
+            <p class="text-center" id="error"></p>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="save">
+              Хадгалах
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
+      const { modal } = require("bootstrap");
+      $("#add-loan").on("shown.bs.modal", function() {
+        $("#start").val(
+          new Date()
+            .toISOString()
+            .slice(0, 10)
+            .replace(/-/g, ".")
+        );
+      });
       Number.prototype.format = function(n, x) {
         var re = "\\d(?=(\\d{" + (x || 3) + "})+" + (n > 0 ? "\\." : "$") + ")";
         return this.toFixed(Math.max(0, ~~n)).replace(
@@ -90,6 +193,16 @@
         );
       };
       ipc.on("users", function(evt, result) {
+        result.forEach(user => {
+          $("#users").append(
+            `<option value="${user.id}">${user.firstname}</option>`
+          );
+        });
+      });
+
+      ipc.on("loans", function(evt, result) {
+        console.log(result);
+        Object.keys(result).forEach((key) => (result[key] == null) && delete result[key]);
         var paid = [],
           notpaid = [];
         result.forEach(user => {
@@ -97,11 +210,9 @@
             notpaid.push(user.amount);
           } else if (user.status == 2) paid.push(user.amount);
           $("#loan").append(
-            `<tr onclick="info(${user.id})" style="display: ${
-              user.status == 0 ? "none" : ""
-            }"><td>${user.id}</td><td>${user.date}</td><td>${
-              user.firstname
-            }</td><td>${user.address}</td><td>${
+            `<tr onclick="info(${user.id})"><td>${user.id}</td><td>${
+              user.start
+            }</td><td>${user.firstname}</td><td>${user.address}</td><td>${
               user.status == 1
                 ? '<span class="badge badge-danger">Төлөгдөөгүй</span>'
                 : '<span class="badge badge-success">Төлөгдсөн</span>'
@@ -122,6 +233,17 @@
       function info(id) {
         ipc.send("info", id);
       }
+      $("#save").click(function() {
+        var amount = $("#amount").val();
+        var start = $("#start").val();
+        var end = $("#end").val();
+        var user = $("#user").val();
+        var data = { amount, start, end, user_id: user, status: "1" };
+        if (amount && start && end && user) {
+          ipc.send("add_loan", { loan: data });
+          window.location.replace("./loan.html");
+        } else $("#error").html("Мэдээлэл ээ бүрэн оруулна уу");
+      });
     </script>
   </body>
 </html>

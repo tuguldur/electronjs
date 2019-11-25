@@ -31,8 +31,9 @@
       var id;
       ipc.send("get_customer");
       ipc.on("info_customer", function(evt, result) {
+        console.log(result);
         if (result) {
-          var user = result[0];
+          var user = result;
           id = user.id;
           $("#name").html(user.lastname + " " + user.firstname);
           $("#lastname").val(user.lastname);
@@ -43,8 +44,8 @@
           user.status == null
             ? $("#status").val("0")
             : $("#status").val(user.status);
-          $("#date").val(user.date);
-          $("#info").val(user.info);
+          $("#start").val(user.start);
+          $("#end").val(user.end);
         } else window.location.replace("./users.html");
       });
     </script>
@@ -57,7 +58,7 @@
           <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="./menu.html">Нүүр</a></li>
             <li class="breadcrumb-item">
-              <a href="./users.html">Хэрэглэгч</a>
+              <a href="./loan.html">Зээлийн жагсаалт</a>
             </li>
             <li class="breadcrumb-item active">
               <a href="#">Тухайн хүний зээлийн хуудас</a>
@@ -83,19 +84,83 @@
                       type="text"
                       class="form-control form-control-success"
                       id="lastname"
+                      readonly
                     />
                   </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                   <div class="form-group inline-label">
                     <label for="firstname">нэр</label>
                     <input
                       type="text"
                       class="form-control form-control-success"
                       id="firstname"
+                      readonly
                     />
                   </div>
                 </div>
+                <div class="col-md-4">
+                  <div class="form-group inline-label">
+                    <label for="phone">Утас</label>
+                    <input
+                      type="number"
+                      class="form-control form-control-success"
+                      id="phone"
+                      readonly
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="row border-bottom" style="font-size:15px;">
+                <div class="col-md-4">
+                  <div class="form-group inline-label">
+                    <label for="address">хаяг</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-success"
+                      id="address"
+                      readonly
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <span style="font-size: 16px;" class="p-3"
+                  >зээлийн мэдээлэл</span
+                >
+              </div>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group inline-label">
+                    <label for="start" style="width: 151px;">Зээл авсан</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-success"
+                      id="start"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group inline-label">
+                    <label for="end" style="width: 151px;">Зээл төлөх</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-success"
+                      id="end"
+                    />
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group inline-label">
+                    <label for="status">төлөв</label>
+                    <select name="status" id="status">
+                      <option value="1">Төлөгдөөгүй</option>
+                      <option value="2">Төлөгдсөн</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
                 <div class="col-md-5">
                   <div class="form-group inline-label">
                     <label for="amount" style="font-size:16px;width:auto"
@@ -110,78 +175,16 @@
                   </div>
                 </div>
               </div>
-              <div class="row border-bottom" style="font-size:15px;">
-                <div class="col-md-4">
-                  <div class="form-group inline-label">
-                    <label for="address">хаяг</label>
-                    <input
-                      type="text"
-                      class="form-control form-control-success"
-                      id="address"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group inline-label">
-                    <label for="phone">Утас</label>
-                    <input
-                      type="number"
-                      class="form-control form-control-success"
-                      id="phone"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="form-group inline-label">
-                    <label for="status">төлөв</label>
-                    <select name="status" id="status">
-                      <option value="0">Идэвхгүй</option>
-                      <option value="1">Төлөгдөөгүй</option>
-                      <option value="2">Төлөгдсөн</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
               <div class="row">
-                <span style="font-size: 16px;" class="p-3"
-                  >зээлийн мэдээлэл</span
-                >
-              </div>
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="form-group inline-label">
-                    <label for="date" style="width: 151px;">он/сар/өдөр</label>
-                    <input
-                      type="text"
-                      class="form-control form-control-success"
-                      id="date"
-                    />
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="float-right">
+                <div class="col-md-12">
+                  <div class="float-left">
                     <a
                       href="#"
                       class="btn btn-outline-primary btn-round btn-sm"
-                      id="clear"
-                      >Цэвэрлэх</a
+                      id="remove"
+                      >Устгах</a
                     >
                   </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-md-12 ">
-                  <div class="form-group">
-                    <textarea
-                      class="form-control"
-                      id="info"
-                      style="min-height: 300px;"
-                    ></textarea>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-md-12">
                   <div class="float-right">
                     <a
                       href="#"
@@ -190,7 +193,7 @@
                       >Хадгалах</a
                     >
                     <a
-                      href="./users.html"
+                      href="./loan.html"
                       class="btn btn-outline-primary btn-round btn-sm"
                       >Буцах</a
                     >
@@ -205,34 +208,21 @@
     </div>
     <script>
       $("#save").click(function() {
-        var lastname = $("#lastname").val();
-        var firstname = $("#firstname").val();
         var amount = $("#amount").val();
+        var start = $("#start").val();
+        var end = $("#end").val();
         var status = $("#status").val();
-        var address = $("#address").val();
-        var phone = $("#phone").val();
-        var date = $("#date").val();
-        var info = $("#info").val();
-        var data = [
-          { lastname, firstname, amount, status, address, phone, date, info }
-        ];
-        if (
-          lastname &&
-          firstname &&
-          amount &&
-          address &&
-          phone &&
-          date &&
-          info
-        ) {
-          ipc.send("update", { user: data[0], id });
-          window.location.replace("./users.html");
+
+        var data = { amount, start, end, status };
+        if (amount && start && end && status) {
+          ipc.send("update_loan", { loan: data, id });
+          window.location.replace("./loan.html");
         } else $("#error").html("Мэдээлэл ээ бүрэн оруулна уу");
       });
-      $("#clear").click(function() {
+      $("#remove").click(function() {
         console.log(id);
-        ipc.send("clear", { id });
-        window.location.replace("./users.html");
+        ipc.send("remove_loan", { id });
+        window.location.replace("./loan.html");
       });
     </script>
   </body>

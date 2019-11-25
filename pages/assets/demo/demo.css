@@ -620,3 +620,13 @@ a:hover {
 .dark .table thead th {
   border-bottom: 2px solid #696969;
 }
+.dark .form-control[readonly] {
+  background: transparent;
+  color: #fff;
+}
+/* hide number arrows */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
