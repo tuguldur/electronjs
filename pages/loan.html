@@ -202,7 +202,9 @@
 
       ipc.on("loans", function(evt, result) {
         console.log(result);
-        Object.keys(result).forEach((key) => (result[key] == null) && delete result[key]);
+        Object.keys(result).forEach(
+          key => result[key] == null && delete result[key]
+        );
         var paid = [],
           notpaid = [];
         result.forEach(user => {

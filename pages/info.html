@@ -35,6 +35,7 @@
         if (result) {
           var user = result;
           id = user.id;
+          ipc.send("get_user_loan", user.user_id);
           $("#name").html(user.lastname + " " + user.firstname);
           $("#lastname").val(user.lastname);
           $("#firstname").val(user.firstname);
@@ -46,6 +47,7 @@
             : $("#status").val(user.status);
           $("#start").val(user.start);
           $("#end").val(user.end);
+          $("#user").val(user.user_id);
         } else window.location.replace("./users.html");
       });
     </script>
@@ -65,7 +67,19 @@
             </li>
           </ol>
         </nav>
-        <h3 class="title">Тухайн хүний зээлийн хуудас</h3>
+
+        <div style="display: inline-flex; line-height: 40px;">
+          <h3 class="title" style="margin: 0; padding: 0;">
+            Тухайн хүний зээлийн хуудас
+          </h3>
+          <a
+            href="#"
+            style="margin-left: 20px;"
+            data-toggle="modal"
+            data-target="#add-loan"
+            >Шинэ зээл нэмэх</a
+          >
+        </div>
         <h3 class="title p-0 mb-3" id="name"></h3>
         <div class="row">
           <div class="col-md-12">
@@ -160,7 +174,7 @@
                   </div>
                 </div>
               </div>
-              <div class="row">
+              <div class="row border-bottom">
                 <div class="col-md-5">
                   <div class="form-group inline-label">
                     <label for="amount" style="font-size:16px;width:auto"
@@ -174,6 +188,27 @@
                     />
                   </div>
                 </div>
+              </div>
+              <div class="row">
+                <span style="font-size: 16px;" class="p-3"
+                  >Тухайн хүний бусад зээлийн мэдээлэл</span
+                >
+              </div>
+              <div class="row p-3">
+                <span id="notpaid" class="mr-5">Нийт төлөгдөөгүй:</span>
+                <span id="paid">Нийт төлөгдсөн:</span>
+                <table class="table table-hover cd">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Авсан</th>
+                      <th scope="col">Төлөх</th>
+                      <th scope="col">Төлөв</th>
+                      <th scope="col">Зээлийн дүн</th>
+                    </tr>
+                  </thead>
+                  <tbody id="loan"></tbody>
+                </table>
               </div>
               <div class="row">
                 <div class="col-md-12">
@@ -206,7 +241,133 @@
         <div class="space-70"></div>
       </div>
     </div>
+    <!-- add loan to current user -->
+    <div
+      class="modal"
+      id="add-loan"
+      tabindex="-1"
+      role="dialog"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              Шинэ зээлийн мэдээлэл нэмэх
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label for="add_amount">Зээлийн хэмжээ</label>
+                  <input
+                    type="number"
+                    class="form-control form-control-success"
+                    id="add_amount"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <div class="form-group">
+                  <label for="add_start">Зээл авах огноо</label>
+                  <input
+                    type="text"
+                    class="form-control form-control-success"
+                    id="add_start"
+                  />
+                </div>
+              </div>
+
+              <div class="col">
+                <div class="form-group">
+                  <label for="add_end">Зээл төлөх огноо</label>
+                  <input
+                    type="text"
+                    class="form-control form-control-success"
+                    id="add_end"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <input
+              type="hidden"
+              class="form-control form-control-success"
+              id="user"
+            />
+
+            <p class="text-center" id="error"></p>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="save_loan">
+              Хадгалах
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
+      const { modal } = require("bootstrap");
+      var users;
+      var user_id;
+      $("#add-loan").on("shown.bs.modal", function() {
+        $("#add_start").val(
+          new Date()
+            .toISOString()
+            .slice(0, 10)
+            .replace(/-/g, ".")
+        );
+      });
+      Number.prototype.format = function(n, x) {
+        var re = "\\d(?=(\\d{" + (x || 3) + "})+" + (n > 0 ? "\\." : "$") + ")";
+        return this.toFixed(Math.max(0, ~~n)).replace(
+          new RegExp(re, "g"),
+          "$&,"
+        );
+      };
+      // get loan
+      ipc.on("users_loans", function(evt, result) {
+        var paid = [],
+          notpaid = [];
+        result.forEach((user, index) => {
+          if (user.status == 1) {
+            notpaid.push(user.amount);
+          } else if (user.status == 2) paid.push(user.amount);
+          $("#loan").append(
+            `<tr onclick="loan(${user.id})"><td>${index + 1}</td><td>${
+              user.start
+            }</td><td>${user.end}</td><td>${
+              user.status == 1
+                ? '<span class="badge badge-danger">Төлөгдөөгүй</span>'
+                : '<span class="badge badge-success">Төлөгдсөн</span>'
+            }</td><td>${user.amount.format()}₮</td></tr>`
+          );
+        });
+        $("#notpaid").html(
+          `Төлөгдөөгүй: <span class="badge badge-danger" style="font-size:13px;">${notpaid
+            .reduce((a, b) => a + b, 0)
+            .format() + "₮"}</span>`
+        );
+        $("#paid").html(
+          `Төлөгдсөн: <span class="badge badge-success" style="font-size:13px;">${paid
+            .reduce((a, b) => a + b, 0)
+            .format() + "₮"}</span>`
+        );
+      });
+      // save
       $("#save").click(function() {
         var amount = $("#amount").val();
         var start = $("#start").val();
@@ -219,10 +380,26 @@
           window.location.replace("./loan.html");
         } else $("#error").html("Мэдээлэл ээ бүрэн оруулна уу");
       });
+      // remove current info
       $("#remove").click(function() {
         console.log(id);
         ipc.send("remove_loan", { id });
         window.location.replace("./loan.html");
+      });
+      // get another info page
+      function loan(id) {
+        ipc.send("info", id);
+      }
+      $("#save_loan").click(function() {
+        var amount = $("#add_amount").val();
+        var start = $("#add_start").val();
+        var end = $("#add_end").val();
+        var user = $("#user").val();
+        var data = { amount, start, end, user_id: user, status: "1" };
+        if (amount && start && end && user) {
+          ipc.send("add_loan", { loan: data });
+          window.location.replace("./loan.html");
+        } else $("#error").html("Мэдээлэл ээ бүрэн оруулна уу");
       });
     </script>
   </body>

@@ -80,7 +80,8 @@ app.on("ready", () => {
       .orderBy("id", "asc")
       .leftJoin("loans", "customers.id", "=", "loans.user_id");
     result.then(function(rows) {
-      mainWindow.webContents.send("loans", rows);
+      var data = rows.filter(row => row.amount != null);
+      mainWindow.webContents.send("loans", data);
     });
   });
   ipcMain.on("get_user", (event, arg) => {
@@ -143,6 +144,12 @@ app.on("ready", () => {
     var result = knex("customers")
       .where({ id: arg.id })
       .del();
+    var loan = knex("loans")
+      .where({ user_id: arg.id })
+      .del();
+    loan.then(function(rows) {
+      console.log(rows);
+    });
     result.then(function(rows) {
       console.log(rows);
     });
@@ -159,7 +166,10 @@ app.on("ready", () => {
     mainWindow.webContents.send("info_customer", customer);
   });
   ipcMain.on("search_users", (event, arg) => {
-    var result = knex("customers").where({ phone: arg });
+    var result = knex("customers")
+      .where("firstname", "like", `%${arg}%`)
+      .orWhere("lastname", "like", `%${arg}%`)
+      .orWhere("phone", "like", `%${arg}%`);
     result.then(function(rows) {
       if (rows.length !== 0) {
         mainWindow.loadURL(
@@ -249,6 +259,7 @@ const template = [
     submenu: [
       { role: "reload" },
       { role: "forcereload" },
+      // { role: "toggledevtools" },
       { type: "separator" },
       { role: "resetzoom" },
       { role: "zoomin" },

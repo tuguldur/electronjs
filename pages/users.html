@@ -100,25 +100,12 @@
       role="dialog"
       aria-hidden="true"
     >
-      <div
-        class="modal-dialog modal-dialog-centered"
-        role="document"
-        style="max-width: 1000px;"
-      >
+      <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <div class="row w-100">
-              <div class="col">
-                <h5 class="modal-title text-center" id="user-info-title">
-                  Тухайн хүний мэдээлэл
-                </h5>
-              </div>
-              <div class="col">
-                <h5 class="modal-title text-center" id="user-info-title">
-                  Тухайн хүний зээлийн мэдээлэл
-                </h5>
-              </div>
-            </div>
+            <h5 class="modal-title text-center" id="user-info-title">
+              Тухайн хүний мэдээлэл
+            </h5>
             <button
               type="button"
               class="close"
@@ -130,7 +117,7 @@
           </div>
           <div class="modal-body d-flex">
             <div class="row">
-              <div class="col-md-6 border-right" style="padding-right: 10px;">
+              <div class="col-md-12">
                 <div class="row">
                   <div class="col">
                     <div class="form-group">
@@ -181,23 +168,6 @@
                   </div>
                 </div>
               </div>
-              <div class="col-md-6" style="padding-left:26px">
-                <div class="row">
-                  <span id="notpaid" class="mr-5">Нийт төлөгдөөгүй:</span>
-                  <span id="paid">Нийт төлөгдсөн:</span>
-                  <table class="table table-hover cd">
-                    <thead>
-                      <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Он/сар/өдөр</th>
-                        <th scope="col">Төлөв</th>
-                        <th scope="col">Зээлийн дүн</th>
-                      </tr>
-                    </thead>
-                    <tbody id="loan"></tbody>
-                  </table>
-                </div>
-              </div>
             </div>
             <p class="text-center" id="error"></p>
           </div>
@@ -217,13 +187,6 @@
       const { modal } = require("bootstrap");
       var users;
       var user_id;
-      Number.prototype.format = function(n, x) {
-        var re = "\\d(?=(\\d{" + (x || 3) + "})+" + (n > 0 ? "\\." : "$") + ")";
-        return this.toFixed(Math.max(0, ~~n)).replace(
-          new RegExp(re, "g"),
-          "$&,"
-        );
-      };
       ipc.on("users", function(evt, result) {
         console.log(result);
         result.forEach(user => {
@@ -232,37 +195,6 @@
           );
         });
         users = result;
-      });
-      ipc.on("users_loans", function(evt, result) {
-        Object.keys(result).forEach(
-          key => result[key] == null && delete result[key]
-        );
-        var paid = [],
-          notpaid = [];
-        result.forEach((user, index) => {
-          if (user.status == 1) {
-            notpaid.push(user.amount);
-          } else if (user.status == 2) paid.push(user.amount);
-          $("#loan").append(
-            `<tr onclick="loan(${user.id})"><td>${index + 1}</td><td>${
-              user.start
-            }</td><td>${
-              user.status == 1
-                ? '<span class="badge badge-danger">Төлөгдөөгүй</span>'
-                : '<span class="badge badge-success">Төлөгдсөн</span>'
-            }</td><td>${user.amount.format()}₮</td></tr>`
-          );
-        });
-        $("#notpaid").html(
-          `Төлөгдөөгүй: <span class="badge badge-danger" style="font-size:13px;">${notpaid
-            .reduce((a, b) => a + b, 0)
-            .format() + "₮"}</span>`
-        );
-        $("#paid").html(
-          `Төлөгдсөн: <span class="badge badge-success" style="font-size:13px;">${paid
-            .reduce((a, b) => a + b, 0)
-            .format() + "₮"}</span>`
-        );
       });
       $("#search_user").on("keyup", function() {
         // Declare variables
@@ -315,9 +247,6 @@
         ipc.send("remove", { id: user_id });
         window.location.replace("./users.html");
       });
-      function loan(id) {
-        ipc.send("info", id);
-      }
     </script>
   </body>
 </html>

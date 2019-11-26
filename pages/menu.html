@@ -85,7 +85,7 @@
               <p class="text-center mb-3" id="error"></p>
               <form id="search">
                 <input
-                  type="number"
+                  type="text"
                   class="form-control"
                   placeholder="Хайлтын хэсэг"
                   id="search_input"
@@ -115,9 +115,10 @@
             "$&,"
           );
         };
+        console.log(result);
         result.forEach(e => {
-          console.log(e.end);
           if (date > e.end && e.status == 1) {
+            console.log(e.end);
             $("#reminders").append(
               `<tr onclick="info(${e.id})"><td>${e.id}</td><td>${
                 e.end
@@ -126,10 +127,6 @@
                   ? '<span class="badge badge-danger">Төлөгдөөгүй</span>'
                   : '<span class="badge badge-success">Төлөгдсөн</span>'
               }</td><td>${e.amount.format()}₮</td></tr>`
-            );
-          } else {
-            $("#ifnoloans").html(
-              "<p class='p-3 text-center'>Хугацаа хэтэрсэн зээл байхгүй байна.</p>"
             );
           }
         });
