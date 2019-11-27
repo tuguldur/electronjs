@@ -56,8 +56,26 @@ app.on("ready", () => {
   ipcMain.on("add_user", (event, arg) => {
     console.log(arg);
     let result = knex("customers").insert(arg);
+
     result.then(function(rows) {
-      console.log(rows);
+      let id = rows[0];
+      let start = new Date()
+        .toISOString()
+        .slice(0, 10)
+        .replace(/-/g, ".");
+      let temp = new Date(start);
+      let month = temp.setMonth(temp.getMonth() + 1);
+      let end = new Date(month)
+        .toISOString()
+        .slice(0, 10)
+        .replace(/-/g, ".");
+      let data = { user_id: id, start, end, amount: 0, status: 1 };
+      console.log(data);
+      knex("loans")
+        .insert(data)
+        .then(function(rows) {
+          console.log(rows);
+        });
     });
   });
   ipcMain.on("add_loan", (event, arg) => {
