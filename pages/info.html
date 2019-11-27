@@ -29,12 +29,14 @@
       const electron = require("electron");
       const ipc = electron.ipcRenderer;
       var id;
+      var user_id;
       ipc.send("get_customer");
       ipc.on("info_customer", function(evt, result) {
         console.log(result);
         if (result) {
           var user = result;
           id = user.id;
+          user_id = user.user_id;
           ipc.send("get_user_loan", user.user_id);
           $("#name").html(user.lastname + " " + user.firstname);
           $("#lastname").val(user.lastname);
@@ -48,6 +50,8 @@
           $("#start").val(user.start);
           $("#end").val(user.end);
           $("#user").val(user.user_id);
+          $("#info").val(user.info);
+          $;
         } else window.location.replace("./users.html");
       });
     </script>
@@ -74,7 +78,7 @@
           </h3>
           <a
             href="#"
-            style="margin-left: 20px;"
+            style="margin-left: 20px; display: none;"
             data-toggle="modal"
             data-target="#add-loan"
             >Шинэ зээл нэмэх</a
@@ -191,24 +195,19 @@
               </div>
               <div class="row">
                 <span style="font-size: 16px;" class="p-3"
-                  >Тухайн хүний бусад зээлийн мэдээлэл</span
+                  >Зээлийн мэдээлэл</span
                 >
               </div>
-              <div class="row p-3">
-                <span id="notpaid" class="mr-5">Нийт төлөгдөөгүй:</span>
-                <span id="paid">Нийт төлөгдсөн:</span>
-                <table class="table table-hover cd">
-                  <thead>
-                    <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Авсан</th>
-                      <th scope="col">Төлөх</th>
-                      <th scope="col">Төлөв</th>
-                      <th scope="col">Зээлийн дүн</th>
-                    </tr>
-                  </thead>
-                  <tbody id="loan"></tbody>
-                </table>
+              <div class="row">
+                <div class="col-md-12 ">
+                  <div class="form-group">
+                    <textarea
+                      class="form-control"
+                      id="info"
+                      style="min-height: 300px;"
+                    ></textarea>
+                  </div>
+                </div>
               </div>
               <div class="row">
                 <div class="col-md-12">
@@ -322,7 +321,6 @@
     <script>
       const { modal } = require("bootstrap");
       var users;
-      var user_id;
       $("#add-loan").on("shown.bs.modal", function() {
         $("#add_start").val(
           new Date()
@@ -331,52 +329,15 @@
             .replace(/-/g, ".")
         );
       });
-      Number.prototype.format = function(n, x) {
-        var re = "\\d(?=(\\d{" + (x || 3) + "})+" + (n > 0 ? "\\." : "$") + ")";
-        return this.toFixed(Math.max(0, ~~n)).replace(
-          new RegExp(re, "g"),
-          "$&,"
-        );
-      };
-      // get loan
-      ipc.on("users_loans", function(evt, result) {
-        var paid = [],
-          notpaid = [];
-        result.forEach((user, index) => {
-          if (user.status == 1) {
-            notpaid.push(user.amount);
-          } else if (user.status == 2) paid.push(user.amount);
-          $("#loan").append(
-            `<tr onclick="loan(${user.id})"><td>${index + 1}</td><td>${
-              user.start
-            }</td><td>${user.end}</td><td>${
-              user.status == 1
-                ? '<span class="badge badge-danger">Төлөгдөөгүй</span>'
-                : '<span class="badge badge-success">Төлөгдсөн</span>'
-            }</td><td>${user.amount.format()}₮</td></tr>`
-          );
-        });
-        $("#notpaid").html(
-          `Төлөгдөөгүй: <span class="badge badge-danger" style="font-size:13px;">${notpaid
-            .reduce((a, b) => a + b, 0)
-            .format() + "₮"}</span>`
-        );
-        $("#paid").html(
-          `Төлөгдсөн: <span class="badge badge-success" style="font-size:13px;">${paid
-            .reduce((a, b) => a + b, 0)
-            .format() + "₮"}</span>`
-        );
-      });
-      // save
       $("#save").click(function() {
         var amount = $("#amount").val();
         var start = $("#start").val();
         var end = $("#end").val();
         var status = $("#status").val();
-
-        var data = { amount, start, end, status };
-        if (amount && start && end && status) {
-          ipc.send("update_loan", { loan: data, id });
+        var info = $("#info").val();
+        var data = { amount, start, end, status, info };
+        if (amount && start && end && status && info) {
+          ipc.send("update_loan", { loan: data, id, user_id });
           window.location.replace("./loan.html");
         } else $("#error").html("Мэдээлэл ээ бүрэн оруулна уу");
       });
@@ -386,10 +347,6 @@
         ipc.send("remove_loan", { id });
         window.location.replace("./loan.html");
       });
-      // get another info page
-      function loan(id) {
-        ipc.send("info", id);
-      }
       $("#save_loan").click(function() {
         var amount = $("#add_amount").val();
         var start = $("#add_start").val();

@@ -126,8 +126,8 @@ app.on("ready", () => {
     });
   });
   ipcMain.on("update_loan", (event, arg) => {
-    var { id, loan } = arg;
-    console.log(id);
+    var { user_id, id, loan } = arg;
+    console.log("user_id: ", user_id, " user_info", arg.info);
     var result = knex("loans")
       .update({
         amount: loan.amount,
@@ -136,6 +136,12 @@ app.on("ready", () => {
         status: loan.status
       })
       .where({ id });
+    var update_user = knex("customers")
+      .update({ info: loan.info })
+      .where({ id: user_id });
+    update_user.then(function(rows) {
+      console.log(rows);
+    });
     result.then(function(rows) {
       console.log(rows);
     });
