@@ -12,7 +12,7 @@
   "author": "Zerothink LLC",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^7.1.1",
+    "electron": "^7.2.4",
     "electron-builder": "^21.2.0",
     "electron-rebuild": "^1.8.6"
   },
